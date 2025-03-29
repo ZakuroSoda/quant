@@ -69,6 +69,9 @@ def add_alma(df: pd.DataFrame, column: str, window: int = 20):
 def negative(value: int | float) -> int | float:
     return -value
 
+def average(values: list) -> float:
+    return round(sum(values) / len(values), 2)
+
 def percent_change(before: int | float, after: int | float) -> float:
     return round(((after - before) / before) * 100, 2)
 
@@ -93,3 +96,4 @@ def close_trade(position: dict, row: dict, stats: dict):
     stats["winning_trades"] += 1 if result > 0 else 0
 
     return stats, log
+    

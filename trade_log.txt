@@ -733,9 +733,3 @@ Trade 730: SHORT @ 542.78 on 14/06/24 CLOSED @ 552.66 on 18/07/24 for P/L of -1.
 Trade 731: SHORT @ 542.45 on 13/06/24 CLOSED @ 552.66 on 18/07/24 for P/L of -1.88%
 Trade 732: SHORT @ 541.36 on 12/06/24 CLOSED @ 552.66 on 18/07/24 for P/L of -2.09%
 Trade 733: SHORT @ 607.66 on 04/12/24 CLOSED @ 586.28 on 18/12/24 for P/L of 3.52%
-
-Summary Statistics
-========================================
-Total Trades: 733
-Win Rate: 78.31%
-Total Profit/Loss: 19602.74%
