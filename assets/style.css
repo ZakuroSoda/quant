@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@200..900&display=swap');
+
+body {
+  background-color: #FAFAD2;
+  font-family: 'Inconsolata', monospace;
+  padding: 0 20px;
+}
+
+.DateInput_input,
+.DateInput_input_1 {
+  background-color: #fb8b1e;
+  color: white;
+  font-family: 'Inconsolata';
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+}
