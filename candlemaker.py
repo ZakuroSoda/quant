@@ -205,3 +205,30 @@ def candle_maker(df_working):
     )
 
     return fig
+
+def add_entry_tp_sl(fig, entry, tp, sl):
+    fig.add_shape(
+        type="line",
+        y0=entry,
+        y1=entry,
+        line=dict(color="blue", width=2, dash="solid"),
+        name="Entry"
+    )
+
+    fig.add_shape(
+        type="line",
+        y0=tp,
+        y1=tp,
+        line=dict(color="green", width=2, dash="solid"),
+        name="TP"
+    )
+
+    fig.add_shape(
+        type="line",
+        y0=sl,
+        y1=sl,
+        line=dict(color="red", width=2, dash="solid"),
+        name="SL"
+    )
+
+    return fig
