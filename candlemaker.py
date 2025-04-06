@@ -88,7 +88,8 @@ def candle_maker(df_working):
         y1=orh,
         fillcolor="rgba(214, 180, 252, 0.2)",
         line=dict(width=0),
-        layer="below"
+        layer="below",
+        name="OR"
     )
 
     fig.update_layout(
@@ -206,29 +207,10 @@ def candle_maker(df_working):
 
     return fig
 
-def add_entry_tp_sl(fig, entry, tp, sl):
-    fig.add_shape(
-        type="line",
-        y0=entry,
-        y1=entry,
-        line=dict(color="blue", width=2, dash="solid"),
-        name="Entry"
-    )
-
-    fig.add_shape(
-        type="line",
-        y0=tp,
-        y1=tp,
-        line=dict(color="green", width=2, dash="solid"),
-        name="TP"
-    )
-
-    fig.add_shape(
-        type="line",
-        y0=sl,
-        y1=sl,
-        line=dict(color="red", width=2, dash="solid"),
-        name="SL"
-    )
+def add_entry_tp_sl(fig, entry, sl, tp):
+    fig.update_layout(shapes=[shape for shape in fig.layout.shapes if not shape.name or 'level' not in shape.name])
+    
+    fig.add_hrect(y0=sl, y1=entry, line_width=0, fillcolor="#FF6347", opacity=0.2, layer="below", name="sl_level")
+    fig.add_hrect(y0=entry, y1=tp, line_width=0, fillcolor="#32CD32", opacity=0.2, layer="below", name="tp_level")
 
     return fig

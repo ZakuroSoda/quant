@@ -1,8 +1,10 @@
 # All dimensions and styling/positioning throughout this app are completely arbitary and only meant for MY laptop.
 
 from utilities import *
+import dash
 from dash import Dash, html, dcc, callback, Output, Input, State, ctx
 from candlemaker import candle_maker, add_entry_tp_sl
+from plotly import graph_objects as go
 from datetime import date
 
 df = load_file("./Data/SPY_5min_merged.csv", date_format="%Y-%m-%d %H:%M:%S")
@@ -21,9 +23,8 @@ print(df.shape)
 print(df_regular_hours.shape)
 print(f"Trading Days Available: {df_regular_hours['date'].nunique()}")
 
-
-TRADING_DAY_TO_DISPLAY = -1
-df_working = df_regular_hours[df_regular_hours['date'] == df_regular_hours['date'].unique()[TRADING_DAY_TO_DISPLAY]].reset_index(drop=True)
+# display the last day by default
+df_working = df_regular_hours[df_regular_hours['date'] == df_regular_hours['date'].unique()[-1]].reset_index(drop=True)
 
 fig = candle_maker(df_working)
 
@@ -42,7 +43,7 @@ app.layout = html.Div(
             date=df['date'].max(),
         ),
         html.Pre(id='entry-text'),
-        html.Pre(id='levels-text', children="Selected Data"),
+        html.Pre(id='levels-text'),
 
         html.Div([
             html.Button('BUY', id='buy-button', n_clicks=0, className='buy-button'),
@@ -61,16 +62,6 @@ app.layout = html.Div(
         dcc.Store(id='take-profit', data=0),
     ],
 )
-
-@callback(
-    Output('candlestick-chart', 'figure'),
-    Input('date-picker', 'date')
-)
-def update_candlestick(date_selected):
-    df_working = df_regular_hours[df_regular_hours['date'] == date.fromisoformat(date_selected)].reset_index(drop=True)
-    # TODO: may want to return a 'Invalid Date' alert when there is no data and revert the date selection back
-    fig = candle_maker(df_working)
-    return fig
 
 # when it comes to implementing the trade entry with TP / SL, we'll need to be smart with Dash/PLotly.
 # using "Selection Data" seems to be the only way to select arbitrary (empty) points on the graph that are non-data-points.
@@ -100,44 +91,62 @@ def handle_all_trade_actions(buy_clicks, sell_clicks, clickData, trade_direction
     trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
     
     if trigger_id == 'buy-button':
-        return "BUY", entry_price, f"Buying at {entry_price}."
+        return "BUY", dash.no_update, f"Buying at {entry_price}."
     elif trigger_id == 'sell-button':
-        return "SELL", entry_price, f"Selling at {entry_price}."
+        return "SELL", dash.no_update, f"Selling at {entry_price}."
     
     elif trigger_id == 'candlestick-chart':
         new_entry_price = clickData['points'][0]['close']
         if trade_direction == "BUY":
-            return trade_direction, new_entry_price, f"Buying at {new_entry_price}."
+            return dash.no_update, new_entry_price, f"Buying at {new_entry_price}."
         else:
-            return trade_direction, new_entry_price, f"Selling at {new_entry_price}."
+            return dash.no_update, new_entry_price, f"Selling at {new_entry_price}."
 
 @callback(
+    Output('candlestick-chart', 'figure'),
     Output('stop-loss', 'data'),
     Output('take-profit', 'data'),
     Output('levels-text', 'children'),
+    Input('date-picker', 'date'),
     Input('candlestick-chart', 'selectedData'),
     State('trade-direction', 'data'),
     State('entry-price', 'data'),
     State('candlestick-chart', 'figure')
 )
-def set_levels(selectedData, trade_direction, entry_price, fig):
-    if selectedData is None or entry_price == 0:
-        return 0, 0, "You may set levels after determining entry."
+def update_chart_and_levels(date_selected, selectedData, trade_direction, entry_price, current_fig):
+    if not ctx.triggered:
+        return current_fig, 0, 0, "You may set levels after determining entry."
     
-    if trade_direction == "BUY":
-        sl = selectedData['range']['y'][0]
-        tp = selectedData['range']['y'][1]
-        rr = (tp - entry_price) / (entry_price - sl)
-    else:
-        sl = selectedData['range']['y'][1]
-        tp = selectedData['range']['y'][0]
-        rr = (entry_price - tp) / (sl - entry_price)
+    trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    
+    if trigger_id == 'date-picker':
+        df_working = df_regular_hours[df_regular_hours['date'] == date.fromisoformat(date_selected)].reset_index(drop=True)
+        # TODO: may want to return a 'Invalid Date' alert when there is no data and revert the date selection back
+        new_fig = candle_maker(df_working)
+        return new_fig, dash.no_update, dash.no_update, dash.no_update
+    
+    elif trigger_id == 'candlestick-chart':
+        if selectedData is None or entry_price == 0:
+            return current_fig, 0, 0, "You may set levels after determining entry."
+        
+        if trade_direction == "BUY":
+            sl = selectedData['range']['y'][0]
+            tp = selectedData['range']['y'][1]
+            rr = (tp - entry_price) / (entry_price - sl)
+        else:
+            sl = selectedData['range']['y'][1]
+            tp = selectedData['range']['y'][0]
+            rr = (entry_price - tp) / (sl - entry_price)
+        
+        fig = go.Figure(current_fig)
+        fig = add_entry_tp_sl(fig, entry_price, sl, tp)
 
-    #TODO: For immediate execution on the next commit
-    # we need to put the TradingView style green and red rectangle to show the levels.
-    # however this will require us to Output to figure, so we might need to combine with the date figure updating
+        sl_percent = abs((entry_price - sl) / entry_price) * 100
+        tp_percent = abs((tp - entry_price) / entry_price) * 100
 
-    return sl, tp, f"SL: {sl:.4f}, TP: {tp:.4f}, RR: {rr:.2f}"
+        return fig, sl, tp, f"SL: {sl:.4f} / {sl_percent:.2f}%, TP: {tp:.4f} / {tp_percent:.2f}%, RR: {rr:.2f}"
+    
+        #TODO: Combine the two callbacks so that we can update TP/SL even when we simply switch our trading direction etc.
 
 if __name__ == '__main__':
     app.run(debug=False)
