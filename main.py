@@ -87,7 +87,7 @@ app.layout = html.Div(
 )
 def handle_all_trade_actions(buy_clicks, sell_clicks, current_fig):
     if not ctx.triggered:
-        return "BUY", 0, "xxx.xxxx"
+        return "BUY", 0, "xxx.xxxx", "buy-button", "sell-button"
     
     trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
     
