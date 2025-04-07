@@ -6,6 +6,19 @@ body {
   padding: 0 20px;
 }
 
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buy-sell-buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 270px;
+  margin: 0 auto;
+}
+
 .DateInput_input,
 .DateInput_input_1 {
   cursor: pointer;
@@ -31,6 +44,8 @@ button {
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
+  font-family: 'Inconsolata', monospace;
+  font-size: 1rem;
 }
 
 button:hover {
@@ -46,4 +61,8 @@ button:hover {
 .sell-button {
   background-color: #ff433d;
   border: 1px solid #ff433d;
+}
+
+.selected {
+  border: 2px solid black;
 }

@@ -32,23 +32,25 @@ app = Dash(__name__)
 app.title = "ZakuroSoda/Quant"
 app.layout = html.Div(
     [
-        html.H1("ZakuroSoda/Quant Terminal"),
-        dcc.DatePickerSingle(
-            id='date-picker',
-            display_format='DD/MM/YYYY',
-            month_format='MMMM YYYY',
-            min_date_allowed=df['date'].min(),
-            max_date_allowed=df['date'].max(),
-            initial_visible_month=df['date'].max(),
-            date=df['date'].max(),
-        ),
-        html.Pre(id='entry-text'),
+        html.Div([
+            html.H1("ZakuroSoda/Quant Terminal"),
+            dcc.DatePickerSingle(
+                id='date-picker',
+                display_format='DD/MM/YYYY',
+                month_format='MMMM YYYY',
+                min_date_allowed=df['date'].min(),
+                max_date_allowed=df['date'].max(),
+                initial_visible_month=df['date'].max(),
+                date=df['date'].max(),
+            )
+        ], className='top'),
         html.Pre(id='levels-text'),
 
         html.Div([
             html.Button('BUY', id='buy-button', n_clicks=0, className='buy-button'),
+            html.Pre(id='entry-text', children="XXX.XXXX"),
             html.Button('SELL', id='sell-button', n_clicks=0, className='sell-button'),
-        ], style={'display': 'flex', 'justify-content': 'space-between', 'width': '180px', 'margin': '0 auto'}),
+        ], className='buy-sell-buttons'),
 
         dcc.Graph(
             id='candlestick-chart',
@@ -76,32 +78,28 @@ app.layout = html.Div(
     Output('trade-direction', 'data'),
     Output('entry-price', 'data'),
     Output('entry-text', 'children'),
+    Output('buy-button', 'className'),
+    Output('sell-button', 'className'),
 
     Input('buy-button', 'n_clicks'),
     Input('sell-button', 'n_clicks'),
-    Input('candlestick-chart', 'clickData'),
-
-    State('trade-direction', 'data'),
-    State('entry-price', 'data'),
+    State('candlestick-chart', 'figure'),
 )
-def handle_all_trade_actions(buy_clicks, sell_clicks, clickData, trade_direction, entry_price):
+def handle_all_trade_actions(buy_clicks, sell_clicks, current_fig):
     if not ctx.triggered:
-        return "BUY", 0, "To start a trade, click on the entry candle."
+        return "BUY", 0, "xxx.xxxx"
     
     trigger_id = ctx.triggered[0]['prop_id'].split('.')[0]
     
-    if trigger_id == 'buy-button':
-        return "BUY", dash.no_update, f"Buying at {entry_price}."
-    elif trigger_id == 'sell-button':
-        return "SELL", dash.no_update, f"Selling at {entry_price}."
-    
-    elif trigger_id == 'candlestick-chart':
-        new_entry_price = clickData['points'][0]['close']
-        if trade_direction == "BUY":
-            return dash.no_update, new_entry_price, f"Buying at {new_entry_price}."
-        else:
-            return dash.no_update, new_entry_price, f"Selling at {new_entry_price}."
+    data = current_fig['data'][0]
+    num_candles = len(data['x'])
+    last_close = data['close']['_inputArray'][str(num_candles - 1)]
 
+    if trigger_id == 'buy-button':
+        return "BUY", last_close, last_close, "buy-button selected", "sell-button"
+    elif trigger_id == 'sell-button':
+        return "SELL", last_close, last_close, "buy-button", "sell-button selected"
+   
 @callback(
     Output('candlestick-chart', 'figure'),
     Output('stop-loss', 'data'),
@@ -147,6 +145,7 @@ def update_chart_and_levels(date_selected, selectedData, trade_direction, entry_
         return fig, sl, tp, f"SL: {sl:.4f} / {sl_percent:.2f}%, TP: {tp:.4f} / {tp_percent:.2f}%, RR: {rr:.2f}"
     
         #TODO: Combine the two callbacks so that we can update TP/SL even when we simply switch our trading direction etc.
+        #TODO: After combining, make sure that when we change dates, we clear everything.
 
 if __name__ == '__main__':
     app.run(debug=False)
