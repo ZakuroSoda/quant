@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@200..900&display=swap');
+
+body {
+  background-color: #FAFAD2;
+  font-family: 'Inconsolata', monospace;
+  padding: 0 20px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buy-sell-buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 270px;
+  margin: 0 auto;
+}
+
+.DateInput_input,
+.DateInput_input_1 {
+  cursor: pointer;
+  background-color: #fb8b1e;
+  color: white;
+  font-family: 'Inconsolata';
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+}
+
+button {
+  border-radius: 4px;
+  box-shadow: rgba(0, 0, 0, .1) 0 2px 4px 0;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  outline: none;
+  outline: 0;
+  padding: 10px 25px;
+  text-align: center;
+  transform: translateY(0);
+  transition: transform 150ms, box-shadow 150ms;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  font-family: 'Inconsolata', monospace;
+  font-size: 1rem;
+}
+
+button:hover {
+  box-shadow: rgba(0, 0, 0, .15) 0 3px 9px 0;
+  transform: translateY(-2px);
+}   
+
+.buy-button {
+  background-color: #0068ff;
+  border: 1px solid #0068ff;
+}
+
+.sell-button {
+  background-color: #ff433d;
+  border: 1px solid #ff433d;
+}
+
+.selected {
+  border: 2px solid black;
+}
